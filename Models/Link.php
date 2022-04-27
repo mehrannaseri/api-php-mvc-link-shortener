@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Core\Model;
-use App\Core\Traits\SoftDelete;
+use App\Traits\SoftDelete;
 use PDO;
 
 class Link extends Model
@@ -37,5 +37,25 @@ class Link extends Model
         $sql->bindValue(":user_id", $user_id);
         $sql->execute();
         return $sql->fetchAll();
+    }
+
+    public function find($id)
+    {
+        $query = "SELECT * FROM $this->table where id = :id";
+        $sql = $this->connection->prepare($query);
+        $sql->bindValue(":id", $id);
+        $sql->execute();
+        return $sql->fetch();
+    }
+
+    public function update($id, $link, $short_link)
+    {
+        $query = "UPDATE $this->table SET main_address = :link, shortened_link = :short_link WHERE id = :id";
+        $statement = $this->connection->prepare($query);
+        $statement->bindParam(':link', $link);
+        $statement->bindParam(':short_link', $short_link);
+        $statement->bindParam(':id', $id);
+
+        $statement->execute();
     }
 }
