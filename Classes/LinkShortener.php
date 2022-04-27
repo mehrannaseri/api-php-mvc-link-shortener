@@ -2,6 +2,7 @@
 
 namespace App\Classes;
 
+use App\Core\Application;
 use App\Core\Exceptions\LinkException;
 use App\Models\Links;
 
@@ -32,11 +33,10 @@ class LinkShortener
 //            throw new LinkException("URL does not appear to exist.");
 //        }
 //
-        $shortCode = $this->urlExistsInDB();
-//        if($shortCode == false){
-            $shortCode = $this->createShortCode($this->url);
-//        }
-
+        if(! $this->urlExistsInDB()){
+            $shortCode = $this->createShortCode();
+            $this->model->saveLink(Application::$app->auth->id, $this->url, $shortCode, $this->timestamp);
+        }
         return $shortCode;
     }
 
@@ -57,21 +57,11 @@ class LinkShortener
     }
 
     protected function urlExistsInDB(){
-        $query = "SELECT short_code FROM ".self::$table." WHERE long_url = :long_url LIMIT 1";
-        $stmt = $this->pdo->prepare($query);
-        $params = array(
-            "long_url" => $url
-        );
-        $stmt->execute($params);
-
-        $result = $stmt->fetch();
-        return (empty($result)) ? false : $result["short_code"];
+        return $this->model->checkLink($this->url);
     }
 
-    protected function createShortCode($url){
-        $shortCode = $this->generateRandomString(self::$codeLength);
-//        $id = $this->insertUrlInDB($url, $shortCode);
-        return $shortCode;
+    protected function createShortCode(){
+        return $this->generateRandomString(self::$codeLength);
     }
 
     protected function generateRandomString($length = 6){
@@ -88,19 +78,6 @@ class LinkShortener
         }
         $randString = str_shuffle($randString);
         return $randString;
-    }
-
-    protected function insertUrlInDB($url, $code){
-        $query = "INSERT INTO ".self::$table." (long_url, short_code, created) VALUES (:long_url, :short_code, :timestamp)";
-        $stmnt = $this->pdo->prepare($query);
-        $params = array(
-            "long_url" => $url,
-            "short_code" => $code,
-            "timestamp" => $this->timestamp
-        );
-        $stmnt->execute($params);
-
-        return $this->pdo->lastInsertId();
     }
 
     public function shortCodeToUrl($code, $increment = true){
