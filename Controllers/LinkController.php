@@ -24,12 +24,15 @@ class LinkController extends BaseController
     {
         try{
             $shortener = new LinkShortener($request->body->link);
-            $short_url = $shortener->urlToShortCode();
-            dd($short_url);
+            list($short_url, $expire_time) = $shortener->urlToShortCode();
         }
         catch (\Exception $e){
             return $this->response(400, $e->getMessage());
         }
 
+        return $this->response(201, "successful", [
+            'new_url' => Application::url().$short_url,
+            'expire_at' => $expire_time
+        ]);
     }
 }
