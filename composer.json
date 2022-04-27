@@ -1,0 +1,19 @@
+{
+    "name": "mehran/mvc",
+    "description": "a simple link shorter",
+    "autoload": {
+        "psr-4": {
+            "App\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "mehran",
+            "email": "mehran.naseri2013@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.4",
+        "firebase/php-jwt": "^6.1"
+    }
+}
