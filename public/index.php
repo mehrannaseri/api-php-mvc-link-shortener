@@ -36,6 +36,7 @@ $app->router->post('/login', [AuthController::class, 'login']);
 $app->router->get('/links', [LinkController::class, 'index']);
 $app->router->post('/links/store', [LinkController::class, 'store']);
 $app->router->post('/links/edit', [LinkController::class, 'edit']);
+$app->router->post('/links/delete', [LinkController::class, 'delete']);
 
 $app->run();
 

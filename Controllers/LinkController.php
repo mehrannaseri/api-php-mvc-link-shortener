@@ -14,7 +14,7 @@ class LinkController extends BaseController
     public Link $model;
     public function __construct()
     {
-        $this->registerMiddleware(new AuthMiddleware(['index', 'store', 'edit']));
+        $this->registerMiddleware(new AuthMiddleware(['index', 'store', 'edit', 'delete']));
         $this->shortener = new LinkShortener();
         $this->model = new Link();
     }
@@ -78,7 +78,26 @@ class LinkController extends BaseController
             'new_url' => Application::url().$short_url,
             'expire_at' => $dataStored['expire_at']
         ]);
+    }
 
+    public function delete(Request $request)
+    {
+        try{
+            $dataStored = $this->model->find($request->body->id);
+            if(! $dataStored){
+                throw new \Exception("Invalid data requested");
+            }
 
+            if(Application::$app->auth->id != $dataStored['user_id']){
+                throw new \Exception("This link is not belongs to you");
+            }
+
+            $this->model->delete($request->body->id);
+        }
+        catch (\Exception $e){
+            return $this->response(400, $e->getMessage());
+        }
+
+        return $this->response(200, "Link deleted successfully");
     }
 }
