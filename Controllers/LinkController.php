@@ -6,7 +6,7 @@ use App\Core\Application;
 use App\Classes\LinkShortener;
 use App\Core\Middlewares\AuthMiddleware;
 use App\Core\Request;
-use App\Models\Links;
+use App\Models\Link;
 
 class LinkController extends BaseController
 {
@@ -18,7 +18,7 @@ class LinkController extends BaseController
     public function index()
     {
         $user = Application::$app->auth;
-        $linkModel = new Links();
+        $linkModel = new Link();
         $links = $linkModel->getAll($user->id);
 
         $base_url = Application::url();
@@ -29,7 +29,8 @@ class LinkController extends BaseController
                 'short_url' => $base_url.$link['shortened_link'],
                 'redirect_to' => $link['main_address'],
                 'create_at' => $link['created_at'],
-                'expire_at' => $link['expire_at']
+                'expire_at' => $link['expire_at'],
+                'deleted' => is_null($link['deleted_at'])  ? false : true
             ];
         }
 
@@ -50,5 +51,10 @@ class LinkController extends BaseController
             'new_url' => Application::url().$short_url,
             'expire_at' => $expire_time
         ]);
+    }
+
+    public function edit(Request $request)
+    {
+        $link = new Link();
     }
 }

@@ -4,7 +4,7 @@ namespace App\Classes;
 
 use App\Core\Application;
 use App\Core\Exceptions\LinkException;
-use App\Models\Links;
+use App\Models\Link;
 
 class LinkShortener
 {
@@ -17,7 +17,7 @@ class LinkShortener
     public function __construct(string $url){
         $this->url = $url;
         $this->timestamp = date("Y-m-d H:i:s");
-        $this->model = new Links();
+        $this->model = new Link();
     }
 
     public function urlToShortCode(){
@@ -70,7 +70,7 @@ class LinkShortener
         return $this->model->checkLink($this->url);
     }
 
-    protected function createShortCode(){
+    public function createShortCode(){
         $sets = explode('|', self::$chars);
         $all = '';
         $randString = '';

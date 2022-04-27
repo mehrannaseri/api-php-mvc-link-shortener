@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Core\Model;
+use App\Core\Traits\SoftDelete;
 use PDO;
 
-class Links extends Model
+class Link extends Model
 {
+    use SoftDelete;
     public $table = 'links';
     public function checkLink($url)
     {
