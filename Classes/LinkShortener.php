@@ -33,11 +33,21 @@ class LinkShortener
 //            throw new LinkException("URL does not appear to exist.");
 //        }
 //
-        if(! $this->urlExistsInDB()){
-            $shortCode = $this->createShortCode();
-            $this->model->saveLink(Application::$app->auth->id, $this->url, $shortCode, $this->timestamp);
+        if($this->urlExistsInDB()){
+            throw new LinkException("This link was shortener before");
         }
-        return $shortCode;
+        $short_url = $this->createShortCode();
+        $expire_time = $this->expireTime($this->timestamp);
+
+        $this->model->saveLink(Application::$app->auth->id, $this->url, $short_url, $expire_time);
+
+        return [$short_url, $expire_time];
+    }
+
+    public function expireTime($time)
+    {
+        $time = strtotime($time);
+        return date("Y-m-d H:i:s", strtotime("+1 month", $time));
     }
 
     protected function validateUrlFormat(){
@@ -61,10 +71,6 @@ class LinkShortener
     }
 
     protected function createShortCode(){
-        return $this->generateRandomString(self::$codeLength);
-    }
-
-    protected function generateRandomString($length = 6){
         $sets = explode('|', self::$chars);
         $all = '';
         $randString = '';
@@ -72,8 +78,10 @@ class LinkShortener
             $randString .= $set[array_rand(str_split($set))];
             $all .= $set;
         }
+
         $all = str_split($all);
-        for($i = 0; $i < $length - count($sets); $i++){
+
+        for($i = 0; $i < self::$codeLength - count($sets); $i++){
             $randString .= $all[array_rand($all)];
         }
         $randString = str_shuffle($randString);
