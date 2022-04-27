@@ -10,16 +10,19 @@ use App\Models\Link;
 
 class LinkController extends BaseController
 {
+    public LinkShortener $shortener;
+    public Link $model;
     public function __construct()
     {
-        $this->registerMiddleware(new AuthMiddleware(['index', 'store']));
+        $this->registerMiddleware(new AuthMiddleware(['index', 'store', 'edit']));
+        $this->shortener = new LinkShortener();
+        $this->model = new Link();
     }
 
     public function index()
     {
         $user = Application::$app->auth;
-        $linkModel = new Link();
-        $links = $linkModel->getAll($user->id);
+        $links = $this->model->getAll($user->id);
 
         $base_url = Application::url();
         $data = [];
@@ -40,8 +43,8 @@ class LinkController extends BaseController
     public function store(Request $request)
     {
         try{
-            $shortener = new LinkShortener($request->body->link);
-            list($short_url, $expire_time) = $shortener->urlToShortCode();
+            list($short_url, $expire_time) = $this->shortener->urlToShortCode($request->body->link);
+            $this->model->saveLink(Application::$app->auth->id, $request->body->link, $short_url, $expire_time);
         }
         catch (\Exception $e){
             return $this->response(400, $e->getMessage());
@@ -55,6 +58,27 @@ class LinkController extends BaseController
 
     public function edit(Request $request)
     {
-        $link = new Link();
+        try{
+            $dataStored = $this->model->find($request->body->id);
+            if(! $dataStored){
+                throw new \Exception("Invalid data requested");
+            }
+            if(Application::$app->auth->id != $dataStored['user_id']){
+                throw new \Exception("This link is not belongs to you");
+            }
+            list($short_url, $expire_time) = $this->shortener->urlToShortCode($request->body->link);
+
+            $this->model->update($request->body->id, $request->body->link, $short_url);
+        }
+        catch (\Exception $e){
+            return $this->response(400, $e->getMessage());
+        }
+
+        return $this->response(200, "Update successfully", [
+            'new_url' => Application::url().$short_url,
+            'expire_at' => $dataStored['expire_at']
+        ]);
+
+
     }
 }
