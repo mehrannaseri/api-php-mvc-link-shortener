@@ -11,35 +11,31 @@ class LinkShortener
     protected static $chars = "abcdfghjkmnpqrstvwxyz|ABCDFGHJKLMNPQRSTVWXYZ|0123456789";
     protected static $codeLength = 7;
     protected $timestamp;
-    public string $url;
     public $model;
 
-    public function __construct(string $url){
-        $this->url = $url;
+    public function __construct(){
         $this->timestamp = date("Y-m-d H:i:s");
         $this->model = new Link();
     }
 
-    public function urlToShortCode(){
-        if(empty($this->url)){
+    public function urlToShortCode($url){
+        if(empty($url)){
             throw new LinkException("You should send url");
         }
 
-        if($this->validateUrlFormat() === false){
+        if($this->validateUrlFormat($url) === false){
             throw new LinkException("URL does not have a valid format.");
         }
 
-//        if (!$this->verifyUrlExists($this->url)){
+//        if (!$this->verifyUrlExists($url)){
 //            throw new LinkException("URL does not appear to exist.");
 //        }
 //
-        if($this->urlExistsInDB()){
+        if($this->urlExistsInDB($url)){
             throw new LinkException("This link was shortener before");
         }
         $short_url = $this->createShortCode();
         $expire_time = $this->expireTime($this->timestamp);
-
-        $this->model->saveLink(Application::$app->auth->id, $this->url, $short_url, $expire_time);
 
         return [$short_url, $expire_time];
     }
@@ -50,8 +46,8 @@ class LinkShortener
         return date("Y-m-d H:i:s", strtotime("+1 month", $time));
     }
 
-    protected function validateUrlFormat(){
-        return filter_var($this->url, FILTER_VALIDATE_URL);
+    protected function validateUrlFormat($url){
+        return filter_var($url, FILTER_VALIDATE_URL);
     }
 
     protected function verifyUrlExists($url){
@@ -66,8 +62,8 @@ class LinkShortener
         return (!empty($response) && $response != 404);
     }
 
-    protected function urlExistsInDB(){
-        return $this->model->checkLink($this->url);
+    public function urlExistsInDB($url){
+        return $this->model->checkLink($url);
     }
 
     public function createShortCode(){
