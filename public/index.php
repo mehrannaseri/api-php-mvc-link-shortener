@@ -33,9 +33,6 @@ $app = new Application(dirname(__DIR__), $config);
 $app->router->post('/register', [AuthController::class, 'register']);
 $app->router->post('/login', [AuthController::class, 'login']);
 
-$app->router->get('/test', [TestController::class, 'index']);
-$app->router->get('/test2', [TestController::class, 'test']);
-
 $app->router->get('/links', [LinkController::class, 'index']);
 $app->router->post('/links/store', [LinkController::class, 'store']);
 
