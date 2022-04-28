@@ -27,10 +27,6 @@ class LinkShortener
             throw new LinkException("URL does not have a valid format.");
         }
 
-//        if (!$this->verifyUrlExists($url)){
-//            throw new LinkException("URL does not appear to exist.");
-//        }
-//
         if($this->urlExistsInDB($url)){
             throw new LinkException("This link was shortener before");
         }
@@ -48,18 +44,6 @@ class LinkShortener
 
     protected function validateUrlFormat($url){
         return filter_var($url, FILTER_VALIDATE_URL);
-    }
-
-    protected function verifyUrlExists($url){
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_setopt($ch,  CURLOPT_RETURNTRANSFER, true);
-        curl_exec($ch);
-        $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        return (!empty($response) && $response != 404);
     }
 
     public function urlExistsInDB($url){
@@ -81,6 +65,8 @@ class LinkShortener
             $randString .= $all[array_rand($all)];
         }
         $randString = str_shuffle($randString);
+        if($this->checkCodeInDataBase($randString) > 0)
+            return $this->createShortCode();
         return $randString;
     }
 
@@ -93,15 +79,6 @@ class LinkShortener
             throw new Exception("Short code does not have a valid format.");
         }
 
-        $urlRow = $this->getUrlFromDB($code);
-        if(empty($urlRow)){
-            throw new Exception("Short code does not appear to exist.");
-        }
-
-        if($increment == true){
-            $this->incrementCounter($urlRow["id"]);
-        }
-
         return $urlRow["long_url"];
     }
 
@@ -110,24 +87,8 @@ class LinkShortener
         return preg_match("|[".$rawChars."]+|", $code);
     }
 
-    protected function getUrlFromDB($code){
-        $query = "SELECT id, long_url FROM ".self::$table." WHERE short_code = :short_code LIMIT 1";
-        $stmt = $this->pdo->prepare($query);
-        $params=array(
-            "short_code" => $code
-        );
-        $stmt->execute($params);
-
-        $result = $stmt->fetch();
-        return (empty($result)) ? false : $result;
-    }
-
-    protected function incrementCounter($id){
-        $query = "UPDATE ".self::$table." SET hits = hits + 1 WHERE id = :id";
-        $stmt = $this->pdo->prepare($query);
-        $params = array(
-            "id" => $id
-        );
-        $stmt->execute($params);
+    protected function checkCodeInDataBase($short_code)
+    {
+        return $this->model->checkShortCode($short_code);
     }
 }
