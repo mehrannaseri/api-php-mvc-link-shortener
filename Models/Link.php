@@ -58,4 +58,13 @@ class Link extends Model
 
         $statement->execute();
     }
+
+    public function checkShortCode($short_code)
+    {
+        $query = "SELECT id FROM $this->table where shortened_link = :short_code";
+        $sql = $this->connection->prepare($query);
+        $sql->bindValue(":short_code", $short_code);
+        $sql->execute();
+        return $sql->rowCount();
+    }
 }
