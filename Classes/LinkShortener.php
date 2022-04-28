@@ -70,23 +70,6 @@ class LinkShortener
         return $randString;
     }
 
-    public function shortCodeToUrl($code, $increment = true){
-        if(empty($code)) {
-            throw new Exception("No short code was supplied.");
-        }
-
-        if($this->validateShortCode($code) == false){
-            throw new Exception("Short code does not have a valid format.");
-        }
-
-        return $urlRow["long_url"];
-    }
-
-    protected function validateShortCode($code){
-        $rawChars = str_replace('|', '', self::$chars);
-        return preg_match("|[".$rawChars."]+|", $code);
-    }
-
     protected function checkCodeInDataBase($short_code)
     {
         return $this->model->checkShortCode($short_code);

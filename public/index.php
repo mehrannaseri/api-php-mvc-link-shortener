@@ -5,9 +5,9 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 use App\Controllers\LinkController;
-use App\Controllers\TestController;
 use App\Core\Application;
 use App\Controllers\AuthController;
+use App\Models\Link;
 use Firebase\JWT\JWT;
 
 require_once __DIR__.'/../vendor/autoload.php';
@@ -46,4 +46,5 @@ function dd($data){
     echo '</pre>';
     exit();
 }
+
 
