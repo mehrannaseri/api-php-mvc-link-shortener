@@ -2,7 +2,7 @@
 
 This is a simple php mvc link shortener
 
-##Installation
+## Installation
 
 Download or clone
 
