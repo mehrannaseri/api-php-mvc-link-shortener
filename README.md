@@ -1,4 +1,4 @@
-# php-mvc-link-shortener
+# api-php-mvc-link-shortener
 
 This is a simple php mvc link shortener
 
